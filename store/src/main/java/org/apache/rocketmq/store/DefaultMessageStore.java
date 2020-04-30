@@ -375,7 +375,7 @@ DefaultMessageStore implements MessageStore {
 
             return new PutMessageResult(PutMessageStatus.SERVICE_NOT_AVAILABLE, null);
         }
-
+        //磁盘空间不足，在写ConsumeQueue、IndexFile文件出现错误时会拒绝消息再次写入。
         if (!this.runningFlags.isWriteable()) {
             long value = this.printTimes.getAndIncrement();
             if ((value % 50000) == 0) {
