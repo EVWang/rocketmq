@@ -91,7 +91,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     /**
      * Compress message body threshold, namely, message body larger than 4k will be compressed on default.
      */
-    private int compressMsgBodyOverHowmuch = 1024 * 4;
+    private int compressMsgBodyOverHowmuch = 1024 * 4;//消息体超过该值则启用压缩，默认4K。
 
     /**
      * Maximum number of retry to perform internally before claiming sending failure in synchronous mode.
@@ -99,7 +99,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      *
      * This may potentially cause message duplication which is up to application developers to resolve.
      */
-    private int retryTimesWhenSendFailed = 2;
+    private int retryTimesWhenSendFailed = 2;//同步方式发送消息重试次数，默认为2，总共执行3次。
 
     /**
      * Maximum number of retry to perform internally before claiming sending failure in asynchronous mode.
@@ -107,7 +107,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      *
      * This may potentially cause message duplication which is up to application developers to resolve.
      */
-    private int retryTimesWhenSendAsyncFailed = 2;
+    private int retryTimesWhenSendAsyncFailed = 2;//异步方式发送消息重试次数，默认为2
 
     /**
      * Indicate whether to retry another broker on sending failure internally.
@@ -117,7 +117,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     /**
      * Maximum allowed message size in bytes.
      */
-    private int maxMessageSize = 1024 * 1024 * 4; // 4M
+    private int maxMessageSize = 1024 * 1024 * 4; // 4M 允许发送的最大消息长度，默认为4M，该值最大值为2^32-1。
 
     /**
      * Default constructor.
@@ -287,7 +287,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
     /**
      * Same to {@link #send(Message)} with target message queue specified in addition.
-     *
+     * 同步方式发送消息，发送到指定消息队列。
      * @param msg Message to send.
      * @param mq Target message queue.
      * @return {@link SendResult} instance to inform senders details of the deliverable, say Message ID of the message,
@@ -324,7 +324,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
     /**
      * Same to {@link #send(Message, SendCallback)} with target message queue specified.
-     *
+     * 异步方式发送消息，发送到指定消息队列。
      * @param msg Message to send.
      * @param mq Target message queue.
      * @param sendCallback Callback to execute on sending completed, either successful or unsuccessful.
@@ -372,7 +372,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
     /**
      * Same to {@link #send(Message)} with message queue selector specified.
-     *
+     * 消息发送，指定消息选择算法，覆盖消息生产者默认的消息队列负载。
      * @param msg Message to send.
      * @param selector Message queue selector, through which we get target message queue to deliver message to.
      * @param arg Argument to work along with message queue selector.
