@@ -78,7 +78,7 @@ public class NamesrvController {
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
 
         this.registerProcessor();
-
+        //定时任务1 每10s 扫描Broker 移除无效的broker
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -86,7 +86,7 @@ public class NamesrvController {
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
         }, 5, 10, TimeUnit.SECONDS);
-
+        //定时任务 每10分钟打印一次 KV配置
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override

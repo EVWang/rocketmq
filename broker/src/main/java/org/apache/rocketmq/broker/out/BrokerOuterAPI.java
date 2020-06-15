@@ -151,8 +151,8 @@ public class BrokerOuterAPI {
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.REGISTER_BROKER, requestHeader);
 
         RegisterBrokerBody requestBody = new RegisterBrokerBody();
-        requestBody.setTopicConfigSerializeWrapper(topicConfigWrapper);
-        requestBody.setFilterServerList(filterServerList);
+        requestBody.setTopicConfigSerializeWrapper(topicConfigWrapper);//主题配置
+        requestBody.setFilterServerList(filterServerList);//消息过滤服务器列表
         request.setBody(requestBody.encode());
 
         if (oneway) {
