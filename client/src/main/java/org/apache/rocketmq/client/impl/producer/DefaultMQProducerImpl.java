@@ -588,6 +588,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         final SendCallback sendCallback,
         final TopicPublishInfo topicPublishInfo,
         final long timeout) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        //Step1 获取broker的ip地址,如果没找到则主动从NameServer更新下topic,如果还是没有找到则抛异常
         String brokerAddr = this.mQClientFactory.findBrokerAddressInPublish(mq.getBrokerName());
         if (null == brokerAddr) {
             tryToFindTopicPublishInfo(mq.getTopic());
@@ -601,20 +602,21 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             byte[] prevBody = msg.getBody();
             try {
                 //for MessageBatch,ID has been set in the generating process
+                //Step2 为消息分配全局唯一ID
                 if (!(msg instanceof MessageBatch)) {
                     MessageClientIDSetter.setUniqID(msg);
                 }
 
                 int sysFlag = 0;
-                if (this.tryToCompressMessage(msg)) {
+                if (this.tryToCompressMessage(msg)) {//判断消息是否超过了4K，超过了进行zip压缩
                     sysFlag |= MessageSysFlag.COMPRESSED_FLAG;
                 }
 
                 final String tranMsg = msg.getProperty(MessageConst.PROPERTY_TRANSACTION_PREPARED);
-                if (tranMsg != null && Boolean.parseBoolean(tranMsg)) {
+                if (tranMsg != null && Boolean.parseBoolean(tranMsg)) {//判断是否是事务prepared消息
                     sysFlag |= MessageSysFlag.TRANSACTION_PREPARED_TYPE;
                 }
-
+                //Step3 如果注册了消息发送钩子函数,则执行消息发送之前的增强逻辑 sendMessageBefore()
                 if (hasCheckForbiddenHook()) {
                     CheckForbiddenContext checkForbiddenContext = new CheckForbiddenContext();
                     checkForbiddenContext.setNameSrvAddr(this.defaultMQProducer.getNamesrvAddr());
@@ -646,7 +648,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                     }
                     this.executeSendMessageHookBefore(context);
                 }
-
+                //Step4 构建消息发送 请求包
                 SendMessageRequestHeader requestHeader = new SendMessageRequestHeader();
                 requestHeader.setProducerGroup(this.defaultMQProducer.getProducerGroup());
                 requestHeader.setTopic(msg.getTopic());
@@ -673,7 +675,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                         MessageAccessor.clearProperty(msg, MessageConst.PROPERTY_MAX_RECONSUME_TIMES);
                     }
                 }
-
+                //Step5 根据消息的发送方式 异步，同步，oneway进行网络传输
                 SendResult sendResult = null;
                 switch (communicationMode) {
                     case ASYNC:
@@ -707,7 +709,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                         assert false;
                         break;
                 }
-
+                //执行消息发送后after逻辑
                 if (this.hasSendMessageHook()) {
                     context.setSendResult(sendResult);
                     this.executeSendMessageHookAfter(context);
