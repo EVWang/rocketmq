@@ -584,7 +584,7 @@ public class MQClientInstance {
             }
         }
     }
-
+    //消息生产者和维护路由缓存
     public boolean updateTopicRouteInfoFromNameServer(final String topic, boolean isDefault,
         DefaultMQProducer defaultMQProducer) {
         try {
@@ -612,7 +612,7 @@ public class MQClientInstance {
                         } else {
                             log.info("the topic[{}] route info changed, old[{}] ,new[{}]", topic, old, topicRouteData);
                         }
-
+                        //如果路由信息查到了，如果没有变化直接返回false;如果发生变化了
                         if (changed) {
                             TopicRouteData cloneTopicRouteData = topicRouteData.cloneTopicRouteData();
 
@@ -622,8 +622,10 @@ public class MQClientInstance {
 
                             // Update Pub info
                             {
+                                //topicRouteData List<QueueData> 转换成TopicPublishInfo里的List<MessageQueue>
                                 TopicPublishInfo publishInfo = topicRouteData2TopicPublishInfo(topic, topicRouteData);
                                 publishInfo.setHaveTopicRouterInfo(true);
+                                //更新该MQClientInstance所管辖的所有消息发送关于topic的所有路由信息
                                 Iterator<Entry<String, MQProducerInner>> it = this.producerTable.entrySet().iterator();
                                 while (it.hasNext()) {
                                     Entry<String, MQProducerInner> entry = it.next();

@@ -57,7 +57,7 @@ public class NamesrvStartup {
                 System.exit(-1);
                 return null;
             }
-
+            //Step1  解析配置文件,填充到 namesrvConfig，nettyServerConfig
             final NamesrvConfig namesrvConfig = new NamesrvConfig();
             final NettyServerConfig nettyServerConfig = new NettyServerConfig();
             nettyServerConfig.setListenPort(9876);
@@ -104,13 +104,13 @@ public class NamesrvStartup {
 
             // remember all configs to prevent discard
             controller.getConfiguration().registerConfig(properties);
-
+            //Step2 根据启动属性创建NamesrvController实例
             boolean initResult = controller.initialize();
             if (!initResult) {
                 controller.shutdown();
                 System.exit(-3);
             }
-
+            //注册jvm进程关闭钩子
             Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {

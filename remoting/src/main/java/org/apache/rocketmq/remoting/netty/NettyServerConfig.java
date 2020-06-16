@@ -20,14 +20,14 @@ public class NettyServerConfig implements Cloneable {
     private int listenPort = 8888;
     private int serverWorkerThreads = 8;
     private int serverCallbackExecutorThreads = 0;
-    private int serverSelectorThreads = 3;
+    private int serverSelectorThreads = 3;//IO 线程池
     private int serverOnewaySemaphoreValue = 256;
     private int serverAsyncSemaphoreValue = 64;
     private int serverChannelMaxIdleTimeSeconds = 120;
 
     private int serverSocketSndBufSize = NettySystemConfig.socketSndbufSize;
     private int serverSocketRcvBufSize = NettySystemConfig.socketRcvbufSize;
-    private boolean serverPooledByteBufAllocatorEnable = true;
+    private boolean serverPooledByteBufAllocatorEnable = true;//ByteBuffer 是否开启换乘
 
     /**
      * make make install
@@ -36,7 +36,7 @@ public class NettyServerConfig implements Cloneable {
      * ../glibc-2.10.1/configure \ --prefix=/usr \ --with-headers=/usr/include \
      * --host=x86_64-linux-gnu \ --build=x86_64-pc-linux-gnu \ --without-gd
      */
-    private boolean useEpollNativeSelector = false;
+    private boolean useEpollNativeSelector = false;//是否启用 Epoll IO模型,Linux环境建议开启
 
     public int getListenPort() {
         return listenPort;
