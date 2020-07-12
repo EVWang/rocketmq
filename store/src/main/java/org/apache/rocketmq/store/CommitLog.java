@@ -535,7 +535,7 @@ public class CommitLog {
         final int tranType = MessageSysFlag.getTransactionValue(msg.getSysFlag());
         if (tranType == MessageSysFlag.TRANSACTION_NOT_TYPE
             || tranType == MessageSysFlag.TRANSACTION_COMMIT_TYPE) {
-            // Delay Delivery
+            //消息发送存储流程-Step2  Delay Delivery 如果消息的延迟级别大于0,将消息原主题名称[msg.getTopic()]，和原消息队列ID [msg.getQueueId()] 存入消息属性中MessageAccessor.putProperty()
             if (msg.getDelayTimeLevel() > 0) {
                 if (msg.getDelayTimeLevel() > this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel()) {
                     msg.setDelayTimeLevel(this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel());
@@ -548,7 +548,7 @@ public class CommitLog {
                 MessageAccessor.putProperty(msg, MessageConst.PROPERTY_REAL_TOPIC, msg.getTopic());
                 MessageAccessor.putProperty(msg, MessageConst.PROPERTY_REAL_QUEUE_ID, String.valueOf(msg.getQueueId()));
                 msg.setPropertiesString(MessageDecoder.messageProperties2String(msg.getProperties()));
-
+                //用延迟消息主题SCHEDULE_TOPIC 和消息队列队列ID更新原消息的主题和队列
                 msg.setTopic(topic);
                 msg.setQueueId(queueId);
             }
@@ -557,7 +557,6 @@ public class CommitLog {
         long eclipseTimeInLock = 0;
         MappedFile unlockMappedFile = null;
         MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile();
-
         putMessageLock.lock(); //spin or ReentrantLock ,depending on store config
         try {
             long beginLockTimestamp = this.defaultMessageStore.getSystemClock().now();
@@ -700,6 +699,7 @@ public class CommitLog {
         }
 
         long eclipseTimeInLock = 0;
+        //消息发送存储流程-Step3 获取当前可以写入的CommitLog文件
         MappedFile unlockMappedFile = null;
         MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile();
 
@@ -707,7 +707,7 @@ public class CommitLog {
         MessageExtBatchEncoder batchEncoder = batchEncoderThreadLocal.get();
 
         messageExtBatch.setEncodedBuff(batchEncoder.encode(messageExtBatch));
-
+        /**消息发送存储流程-Step4 写入CommitLog之前，申请putMessageLock*/
         putMessageLock.lock();
         try {
             long beginLockTimestamp = this.defaultMessageStore.getSystemClock().now();
@@ -715,6 +715,10 @@ public class CommitLog {
 
             // Here settings are stored timestamp, in order to ensure an orderly
             // global
+            /**消息发送存储流程-Step5 设置消息存储的时间，如果mappedFile为空，说明${ROCKET_HOME}/store/commitLog下没有任何文件。
+             * 则用0偏移量创建第一个文件[00000000000000000000]。
+             * 创建失败则抛出异常CREATE_MAPEDFILE_FAILED,很可能是磁盘空间不足
+            */
             messageExtBatch.setStoreTimestamp(beginLockTimestamp);
 
             if (null == mappedFile || mappedFile.isFull()) {

@@ -201,7 +201,9 @@ public class MappedFile extends ReferenceResource {
     public AppendMessageResult appendMessagesInner(final MessageExt messageExt, final AppendMessageCallback cb) {
         assert messageExt != null;
         assert cb != null;
-
+        /**消息发送存储流程-Step6
+         * 将消息追加的MapperFile
+         * */
         int currentPos = this.wrotePosition.get();
 
         if (currentPos < this.fileSize) {
